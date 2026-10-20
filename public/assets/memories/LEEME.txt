@@ -1,0 +1,3 @@
+1.svg, 2.svg y 3.svg contienen las tres fotografías JPEG proporcionadas, sin EXIF/IPTC/comentarios.
+No se alteraron sus píxeles, rostros ni proporciones. Los originales permanecen en el Escritorio.
+No publicar hasta autorización del usuario. Las imágenes publicadas serán accesibles mediante sus URLs.

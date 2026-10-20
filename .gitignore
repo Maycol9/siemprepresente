@@ -1,0 +1,10 @@
+node_modules/
+dist/
+private-originals/
+*.local
+.npm-cache/
+desktop.png
+mobile.png
+memory-*.png
+music-ready.png
+photo-*.png

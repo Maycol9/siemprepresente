@@ -19,7 +19,18 @@ assert.equal(await page.locator('#youtube iframe').count(),1);
 assert.match(await page.locator('#youtube iframe').getAttribute('allow'),/autoplay/);
 await page.waitForTimeout(20000);
 await page.getByRole('button',{name:'Reproducir música',exact:true}).click();
-await page.getByText('La canción acompaña tu aventura.',{exact:true}).waitFor({timeout:30000});
+try{
+ await page.getByText('La canción acompaña tu aventura.',{exact:true}).waitFor({timeout:30000});
+}catch(error){
+ console.log('Estado real:',await page.locator('#music-status').textContent());
+ console.log('Errores JavaScript:',errors);
+ console.log('Reproductor:',await page.locator('#youtube iframe').getAttribute('src'));
+ const videoFrame=page.frames().find(f=>f.url().startsWith('https://www.youtube.com/embed/'));
+ if(videoFrame)console.log('Mensaje de YouTube:',await videoFrame.locator('body').innerText({timeout:5000}).catch(()=>'(no accesible)'));
+ await page.screenshot({path:'music-ready.png'});
+ await browser.close();
+ throw error;
+}
 console.log('YouTube confirmó PLAYING tras pulsar reproducir');
 await page.getByRole('button',{name:'Pausar música',exact:true}).click();
 await page.getByText('Música en pausa. Puedes retomarla cuando quieras.',{exact:true}).waitFor();

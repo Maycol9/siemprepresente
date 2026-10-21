@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 const browser=await chromium.launch({channel:'msedge',headless:true});
 const page=await browser.newPage();
-await page.goto('http://127.0.0.1:5173',{waitUntil:'domcontentloaded'});
+await page.goto(process.env.GAME_URL||'http://127.0.0.1:5173/siemprepresente/',{waitUntil:'domcontentloaded'});
 await page.waitForTimeout(1000);
 await page.getByRole('button',{name:'Comenzar →',exact:true}).click();
 await page.getByRole('button',{name:'Saltar introducción'}).click();

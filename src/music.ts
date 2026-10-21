@@ -1,5 +1,7 @@
 /** One visible official YouTube player, independent of the game scenes. */
-export function createMusic(){
+let music: ReturnType<typeof initializeMusic> | undefined;
+export function createMusic(){return music ??= initializeMusic();}
+function initializeMusic(){
  const host=document.getElementById('youtube')!;
  const status=document.getElementById('music-status')!;
  const toggle=document.getElementById('music-toggle')!;
@@ -9,7 +11,7 @@ export function createMusic(){
  let player:any,ready=false,wanted=false,playing=false,apiScript:HTMLScriptElement|undefined;
  let timeout:number|undefined;
  const globals=window as any;
- const prompt='Pulsa reproducir para acompañar la aventura con música.';
+ const prompt='Pulsa Reproducir música o ▶ en el video. Puedes seguir jugando sin música.';
  const url=new URL('https://www.youtube.com/embed/nyerdKDi45s');
  url.search=new URLSearchParams({enablejsapi:'1',playsinline:'1',controls:'1',origin:location.origin,rel:'0'}).toString();
  function frame(){
@@ -34,40 +36,49 @@ export function createMusic(){
     playing=event.data===1;
     toggle.textContent=playing?'Pausar música':'Reproducir música';
     if(playing){wanted=true;retry.hidden=true;if(document.hidden){player.pauseVideo();return;}status.textContent='La canción acompaña tu aventura.';}
-    else if(event.data===2)status.textContent='Música en pausa. Puedes retomarla cuando quieras.';
+    else if(event.data===2){wanted=false;status.textContent='Música en pausa. Puedes retomarla cuando quieras.';}
     else if(event.data===0){wanted=false;status.textContent='La canción terminó. Puedes volver a reproducirla.';}
    },
-   onAutoplayBlocked:()=>{status.textContent=prompt;},
+   onAutoplayBlocked:()=>{wanted=false;toggle.textContent='Reproducir música';status.textContent=prompt;},
    onError:(event:{data:number})=>{
-    playing=false;toggle.textContent='Reproducir música';
-    const reason=event.data===101||event.data===150?'YouTube no permite reproducir esta canción dentro del juego. Ábrela con «Escuchar en YouTube».':event.data===153?'YouTube no pudo identificar esta página. Abre el juego desde su dirección http:// y reintenta.':event.data===100?'La canción no está disponible en YouTube.':'YouTube no pudo reproducir la canción. Reintenta o ábrela con el enlace.';
-    unavailable(reason);
+    wanted=false;playing=false;toggle.textContent='Reproducir música';
+    const reasons:Record<number,string>={
+     2:'ID del video o parámetros inválidos (error 2).',
+     5:'Error de reproducción HTML5 (error 5).',
+     100:'YouTube informa que el video fue eliminado o es privado (error 100).',
+     101:'El propietario no permite insertar esta canción (error 101).',
+     150:'El propietario no permite insertar esta canción (error 150).',
+     153:'YouTube no recibió el Referer o la identificación del cliente (error 153). Abre el juego desde su dirección HTTPS pública.'
+    };
+    unavailable(`${reasons[event.data]??`Error de YouTube ${event.data}.`} Puedes jugar sin música o usar «Abrir canción en YouTube».`);
    }
   }});
  }
  function connect(){
   window.clearTimeout(timeout);
   if(globals.YT?.Player){attach();}
-  else{
-   apiScript?.remove();apiScript=document.createElement('script');
+  else if(!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')){
+   apiScript=document.createElement('script');
    apiScript.src='https://www.youtube.com/iframe_api';apiScript.async=true;
-   apiScript.onerror=()=>unavailable('No se pudo conectar con YouTube. Puedes usar el reproductor, reintentar o abrir la canción con el enlace.');
+   apiScript.onerror=()=>{apiScript?.remove();unavailable('No se pudo conectar con YouTube. Puedes usar el reproductor, reintentar o abrir la canción con el enlace.');};
    document.head.append(apiScript);
   }
   timeout=window.setTimeout(()=>{if(!ready)unavailable('YouTube está tardando en conectar. Prueba el botón ▶ del reproductor o reintenta.');},15000);
  }
- globals.onYouTubeIframeAPIReady=attach;
+ const previousReady=globals.onYouTubeIframeAPIReady;
+ globals.onYouTubeIframeAPIReady=()=>{try{previousReady?.();}finally{attach();}};
  frame();connect();
  toggle.onclick=()=>{if(ready&&playing){wanted=false;player.pauseVideo();}else play();};
  retry.onclick=()=>{
   if(ready&&playing)return;
-  player?.destroy();player=undefined;ready=false;playing=false;
-  retry.hidden=true;status.textContent='Conectando con YouTube…';frame();connect();
+  retry.hidden=true;
+  if(ready)play();else{status.textContent='Conectando con YouTube…';connect();}
  };
  function hidden(){
+  wanted=false;
   if(ready)player.pauseVideo();
-  else{const iframe=host.querySelector('iframe');if(iframe)iframe.src=url.href;}
+  else host.querySelector('iframe')?.contentWindow?.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:[]}),url.origin);
  }
- function visible(){if(wanted)status.textContent='Pulsa reproducir para retomar la música.';}
+ function visible(){status.textContent=prompt;}
  return {play,hidden,visible};
 }

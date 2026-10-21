@@ -1,6 +1,6 @@
 # Lo que mi corazón no olvida
 
-Aventura local de plataformas y magia con Phaser 3, TypeScript y Vite. Tres encuentros, cartas completas, controles táctiles y teclado, pausa, reintento, modo tranquilo, progreso local y final con galería. No se ha publicado ni conectado ningún repositorio remoto.
+Aventura de plataformas y magia con Phaser 3, TypeScript y Vite. Tres encuentros, cartas completas, controles táctiles y teclado, pausa, reintento, modo tranquilo, progreso local y final con galería. Repositorio: https://github.com/Maycol9/siemprepresente. Sitio: https://maycol9.github.io/siemprepresente/.
 
 ## Ejecutar en Windows 11 / PowerShell
 
@@ -19,7 +19,7 @@ npm run build
 npm run preview
 ```
 
-No abras index.html directamente ni publiques el HTML de desarrollo. La carpeta public se copia a dist y Vite genera referencias relativas al JavaScript compilado (`base: './'`), compatibles con una subcarpeta de GitHub Pages.
+No abras index.html directamente ni publiques el HTML de desarrollo. La carpeta public se copia a dist y Vite genera referencias al JavaScript compilado con `base: '/siemprepresente/'`.
 
 ## Fotografías integradas
 
@@ -43,11 +43,11 @@ Referencia: https://developers.google.com/youtube/iframe_api_reference
 
 YouTube es un servicio externo y puede procesar datos según sus políticas. El proyecto no incluye analítica, formularios ni seguimiento propio. Las fuentes de Google tienen alternativas locales serif y sans-serif si la conexión falla.
 
-## Publicación manual, solo cuando la solicites
+## Publicación con GitHub Actions
 
-El workflow `.github/workflows/pages.yml` se ejecuta exclusivamente mediante **Run workflow**; no publica por hacer push. Antes de conectar GitHub, elegir el nombre de un repositorio nuevo. No se ha reutilizado ni modificado ningún remoto.
+El único workflow `.github/workflows/pages.yml` se ejecuta al actualizar `main` y mediante **Run workflow**. Usa Node 22, `npm ci`, pruebas de música, compilación TypeScript/Vite y validación de los archivos de producción.
 
-Después de autorizar la publicación: subir el proyecto al nuevo repositorio, seleccionar Settings → Pages → GitHub Actions y ejecutar el workflow. Publica únicamente dist tras compilar con npm ci y npm run build.
+Pages debe usar Settings → Pages → GitHub Actions. Se publica exclusivamente `dist`. Consulta `VERIFICACION.md` para los resultados y límites de la última comprobación.
 
 **Privacidad:** las fotografías en GitHub Pages serán accesibles a quien tenga sus URLs; también desde el repositorio si es público.
 

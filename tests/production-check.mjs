@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {readFileSync,existsSync} from 'node:fs';
+const html=readFileSync('dist/index.html','utf8');
+assert.doesNotMatch(html,/\/src\/|localhost|[A-Z]:\\|\.ts["']/);
+const assets=[...html.matchAll(/(?:src|href)="(\/siemprepresente\/assets\/[^"?#]+)"/g)].map(m=>m[1]);
+assert.ok(assets.some(p=>p.endsWith('.js')));
+assert.ok(assets.some(p=>p.endsWith('.css')));
+for(const asset of assets)assert.ok(existsSync(`dist/${asset.slice('/siemprepresente/'.length)}`),asset);
+for(let n=1;n<=3;n++)assert.deepEqual(readFileSync(`dist/assets/memories/${n}.svg`),readFileSync(`public/assets/memories/${n}.svg`));
+console.log('Producción: JS/CSS compilados bajo /siemprepresente/, tres fotografías intactas.');

@@ -12,7 +12,8 @@ for(let n=1;n<=3;n++){
 const browser=await chromium.launch({channel:'msedge',headless:true});
 const page=await browser.newPage({viewport:{width:1440,height:1000}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto('http://127.0.0.1:5173',{waitUntil:'domcontentloaded'});
+const gameURL=process.env.GAME_URL||'http://127.0.0.1:5173/siemprepresente/';
+await page.goto(gameURL,{waitUntil:'domcontentloaded'});
 await page.locator('#youtube iframe').waitFor();
 assert.equal(await page.locator('#youtube iframe').count(),1);
 assert.match(await page.locator('#youtube iframe').getAttribute('allow'),/autoplay/);
@@ -27,7 +28,7 @@ await page.getByText('La canción acompaña tu aventura.',{exact:true}).waitFor(
 await page.screenshot({path:'music-ready.png'});
 const images=await browser.newPage();
 for(let n=1;n<=3;n++){
- const response=await images.goto(`http://127.0.0.1:5173/assets/memories/${n}.svg`);
+ const response=await images.goto(new URL(`assets/memories/${n}.svg`,gameURL).href);
  assert.equal(response.status(),200);
  await images.screenshot({path:`photo-${n}.png`});
 }
